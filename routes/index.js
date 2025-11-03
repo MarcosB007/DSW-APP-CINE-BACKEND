@@ -1,10 +1,10 @@
 import { Router } from "express";
-//import { obtenerUsuarios } from "../controllers/admin.controllers.js";
+import { obtenerPeliculas } from "../controllers/admin.controllers.js";
 
 //Endpoint para obtener los usuarios
 
 const router = Router();
 
-//router.get('/usuarios', obtenerUsuarios);
+router.get('/obtenerPeliculas', obtenerPeliculas);
 
 export default router;
