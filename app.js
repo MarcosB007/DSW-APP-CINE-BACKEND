@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import router from './routes/index.js';
 import routerAdmin from './routes/admin.js';
+import routerAuth from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use(express.static('public'));
 
 app.use('/api', router);
 app.use('/admin', routerAdmin);
+app.use('/auth', routerAuth);
 
 const PORT = process.env.PORT;
 
