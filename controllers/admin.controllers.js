@@ -1,8 +1,8 @@
-import { db } from "../database/db.js";
+import { pool } from "../database/db.js";
 
 const obtenerPeliculas = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM pelicula');
+        const [rows] = await pool.query('SELECT * FROM pelicula');
         res.json(rows);
         console.log("Operacion exitosa");
     } catch (error) {
