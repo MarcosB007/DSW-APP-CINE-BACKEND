@@ -71,89 +71,95 @@ export const register = async (req, res) => {
 };
 
 
-// // --- INICIAR SESIÓN (El endpoint que pediste) ---
-// export const login = async (req, res) => {
-//     const { email, password } = req.body;
+// --- INICIAR SESIÓN (El endpoint que pediste) ---
+export const login = async (req, res) => {
+    const { email, password } = req.body;
 
-//     try {
-//         // 1. Buscar al usuario por email
-//         const [rows] = await pool.query(
-//             'SELECT * FROM usuarios WHERE email = ?',
-//             [email]
-//         );
+    try {
+        // 1. Buscar al usuario por email
+        const [rows] = await pool.query(
+            'SELECT * FROM usuario WHERE email = ?',
+            [email]
+        );
 
-//         // 2. Si el usuario no existe
-//         if (rows.length === 0) {
-//             return res.status(400).json({ message: 'Credenciales incorrectas' });
-//         }
+        // 2. Si el usuario no existe
+        if (rows.length === 0) {
+            return res.status(400).json({ message: 'Credenciales incorrectas' });
+        }
 
-//         const user = rows[0];
+        const user = rows[0];
 
-//         // 3. Comparar la contraseña
-//         const isMatch = await bcrypt.compare(password, user.password_hash);
+        // 3. Comparar la contraseña
+        const isMatch = await bcrypt.compare(password, user.contrasenia);
 
-//         // 4. Si la contraseña no coincide
-//         if (!isMatch) {
-//             return res.status(400).json({ message: 'Credenciales incorrectas' });
-//         }
+        // 4. Si la contraseña no coincide
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Credenciales incorrectas' });
+        }
 
-//         // 5. Si todo es correcto, crear el token JWT
-//         // (Tu frontend espera el rol, así que lo incluimos si existe)
-//         const tokenPayload = {
-//             id: user.id,
-//             role: user.role, // Asume que tienes una columna 'role'
-//             username: user.username
-//         };
+        // 5. Si todo es correcto, crear el token JWT
+        // (Tu frontend espera el rol, así que lo incluimos si existe)
+        const tokenPayload = {
+            id: user.id,
+            rol: user.ROL_id, // Asume que tienes una columna 'role'
+            email: user.email
+        };
         
-//         const token = jwt.sign(tokenPayload, JWT_SECRET, {
-//             expiresIn: '1h',
-//         });
+        const token = jwt.sign(tokenPayload, JWT_SECRET, {
+            expiresIn: '1h',
+        });
 
-//         // 6. Enviar el token al cliente
-//         res.json({ token });
+        // 6. Enviar el token al cliente
+        res.json({ token });
 
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error en el servidor', error: error.message });
-//     }
-// };
+    } catch (error) {
+        res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    }
+};
 
-// // --- VERIFICAR TOKEN (Tu AuthContext lo necesita) ---
-// export const verifyToken = async (req, res) => {
-//     // (Este endpoint es llamado por tu verifyTokenRequest)
-//     // El token se espera en el header 'Authorization'
-//     const { authorization } = req.headers;
+// --- VERIFICAR TOKEN (Tu AuthContext lo necesita) ---
+export const verifyToken = async (req, res) => {
+    // (Este endpoint es llamado por tu verifyTokenRequest)
+    // El token se espera en el header 'Authorization'
+    const { authorization } = req.headers;
 
-//     if (!authorization) {
-//         return res.status(401).json({ message: 'No autorizado: Sin token' });
-//     }
+    if (!authorization) {
+        return res.status(401).json({ message: 'No autorizado: Sin token' });
+    }
 
-//     try {
-//         // 1. Extraer el token (formato "Bearer <token>")
-//         const token = authorization.split(' ')[1];
+    try {
+        // 1. Extraer el token (formato "Bearer <token>")
+        const token = authorization.split(' ')[1];
         
-//         // 2. Verificar el token
-//         const payload = jwt.verify(token, JWT_SECRET);
+        // 2. Verificar el token
+        const payload = jwt.verify(token, JWT_SECRET);
 
-//         // 3. Buscar al usuario en la BD con el ID del token
-//         const [rows] = await pool.query(
-//             'SELECT id, username, email, role FROM usuarios WHERE id = ?',
-//             [payload.id]
-//         );
+        // 3. Buscar al usuario en la BD con el rol
+        const [rows] = await pool.query(
+            `SELECT 
+                u.id, 
+                u.email, 
+                r.nombre AS rol
+            FROM usuario u
+            INNER JOIN ROL r ON u.ROL_id = r.id
+            WHERE u.id = ?`,
+            [payload.id]
+        );
 
-//         if (rows.length === 0) {
-//             return res.status(404).json({ message: 'Usuario del token no encontrado' });
-//         }
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Usuario del token no encontrado' });
+        }
 
-//         // 4. Devolver los datos del usuario (sin la contraseña)
-//         res.json(rows[0]);
+        // 4. Devolver los datos del usuario (sin la contraseña)
+        res.json(rows[0]);
 
-//     } catch (error) {
-//         if (error.name === 'JsonWebTokenError') {
-//             return res.status(401).json({ message: 'No autorizado: Token inválido' });
-//         }
-//         if (error.name === 'TokenExpiredError') {
-//             return res.status(401).json({ message: 'No autorizado: Token expirado' });
-//         }
-//         res.status(500).json({ message: 'Error en el servidor', error: error.message });
-//     }
-// };
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'No autorizado: Token inválido' });
+        }
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'No autorizado: Token expirado' });
+        }
+        res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    }
+};

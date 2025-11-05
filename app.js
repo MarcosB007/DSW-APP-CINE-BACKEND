@@ -30,9 +30,9 @@ app.use(express.json());
 
 app.use(express.static('public'));
 
-app.use('/api', router);
+app.use('/', router);
 app.use('/admin', routerAdmin);
-app.use('/auth', routerAuth);
+app.use('/api', routerAuth);
 
 const PORT = process.env.PORT;
 
