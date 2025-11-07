@@ -8,31 +8,33 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // --- REGISTRAR UN USUARIO ---
 export const register = async (req, res) => {
-    const { email, contrasenia, nombre, apellido, telefono, fechanacimiento, ROL_id } = req.body;
+    const { email, contrasenia, nombre, apellido, telefono, fechanacimiento } = req.body;
     
-    // 1. Necesitamos una conexión específica del pool para manejar la transacción
+    // Necesitamos una conexión específica del pool para manejar la transacción
     let connection;
     
     try {
+
+        const ROL_id = 2;
+
         connection = await pool.getConnection();
         
-        // 2. Iniciar la transacción
+        // Iniciar la transacción
         await connection.beginTransaction(); 
 
-        // 3. Hashear la contraseña
+        // Hashear la contraseña
         const passwordHash = await bcrypt.hash(contrasenia, 10);
 
-        // 4. Guardar en la tabla 'usuario'
+        // Guardar en la tabla 'usuario'
         const [userResult] = await connection.query(
             'INSERT INTO usuario (email, contrasenia, ROL_id) VALUES (?, ?, ?)',
             [email, passwordHash, ROL_id]
         );
 
-        // 5. Obtener el ID del usuario recién creado
+        // Obtener el ID del usuario recién creado
         const newUserId = userResult.insertId;
 
-        // 6. Guardar en la tabla 'perfil_usuario' usando el newUserId
-        // (Tu diagrama muestra que 'perfil_usuario' también tiene un campo 'email')
+        //  Guardar en la tabla 'perfil_usuario' usando el newUserId
         await connection.query(
             'INSERT INTO perfil_usuario (nombre, apellido, email, telefono, fechanacimiento, USUARIO_id) VALUES (?, ?, ?, ?, ?, ?)',
             [nombre, apellido, email, telefono, fechanacimiento, newUserId]
@@ -76,20 +78,20 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1. Buscar al usuario por email
+        // Buscar al usuario por email
         const [rows] = await pool.query(
             'SELECT * FROM usuario WHERE email = ?',
             [email]
         );
 
-        // 2. Si el usuario no existe
+        // Si el usuario no existe
         if (rows.length === 0) {
             return res.status(400).json({ message: 'Credenciales incorrectas' });
         }
 
         const user = rows[0];
 
-        // 3. Comparar la contraseña
+        // Comparar la contraseña
         const isMatch = await bcrypt.compare(password, user.contrasenia);
 
         // 4. Si la contraseña no coincide
@@ -97,8 +99,7 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: 'Credenciales incorrectas' });
         }
 
-        // 5. Si todo es correcto, crear el token JWT
-        // (Tu frontend espera el rol, así que lo incluimos si existe)
+        // Si todo es correcto, crear el token JWT
         const tokenPayload = {
             id: user.id,
             rol: user.ROL_id, // Asume que tienes una columna 'role'
@@ -109,7 +110,7 @@ export const login = async (req, res) => {
             expiresIn: '1h',
         });
 
-        // 6. Enviar el token al cliente
+        // Enviar el token al cliente
         res.json({ token });
 
     } catch (error) {
@@ -119,7 +120,6 @@ export const login = async (req, res) => {
 
 // --- VERIFICAR TOKEN (Tu AuthContext lo necesita) ---
 export const verifyToken = async (req, res) => {
-    // (Este endpoint es llamado por tu verifyTokenRequest)
     // El token se espera en el header 'Authorization'
     const { authorization } = req.headers;
 
@@ -128,13 +128,13 @@ export const verifyToken = async (req, res) => {
     }
 
     try {
-        // 1. Extraer el token (formato "Bearer <token>")
+        // Extraer el token (formato "Bearer <token>")
         const token = authorization.split(' ')[1];
         
-        // 2. Verificar el token
+        // Verificar el token
         const payload = jwt.verify(token, JWT_SECRET);
 
-        // 3. Buscar al usuario en la BD con el rol
+        // Buscar al usuario en la BD con el rol
         const [rows] = await pool.query(
             `SELECT 
                 u.id, 
@@ -150,7 +150,7 @@ export const verifyToken = async (req, res) => {
             return res.status(404).json({ message: 'Usuario del token no encontrado' });
         }
 
-        // 4. Devolver los datos del usuario (sin la contraseña)
+        // Devolver los datos del usuario (sin la contraseña)
         res.json(rows[0]);
 
     } catch (error) {
