@@ -9,18 +9,18 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // --- REGISTRAR UN USUARIO ---
 export const register = async (req, res) => {
     const { email, contrasenia, nombre, apellido, telefono, fechanacimiento } = req.body;
-    
+
     // Necesitamos una conexión específica del pool para manejar la transacción
     let connection;
-    
+
     try {
 
         const ROL_id = 2;
 
         connection = await pool.getConnection();
-        
+
         // Iniciar la transacción
-        await connection.beginTransaction(); 
+        await connection.beginTransaction();
 
         // Hashear la contraseña
         const passwordHash = await bcrypt.hash(contrasenia, 10);
@@ -48,8 +48,19 @@ export const register = async (req, res) => {
             expiresIn: '1h',
         });
 
+        const userPayload = {
+            id: newUserId,
+            nombre: nombre,
+            apellido: apellido,
+            email: email,
+            rol: ROL_id
+        };
+
         // 9. Enviar la respuesta
-        res.status(201).json({ token });
+        res.status(201).json({
+            token,
+            user: userPayload // <-- Envía el usuario también
+        });
 
     } catch (error) {
         // 10. Si algo falló, "deshace" todos los cambios de esta transacción
@@ -63,7 +74,7 @@ export const register = async (req, res) => {
         }
         console.error(error); // Es bueno ver el error completo en la consola del servidor
         res.status(500).json({ message: 'Error en el servidor', error: error.message });
-    
+
     } finally {
         // 11. Pase lo que pase, libera la conexión de vuelta al pool
         if (connection) {
@@ -105,7 +116,7 @@ export const login = async (req, res) => {
             rol: user.ROL_id, // Asume que tienes una columna 'role'
             email: user.email
         };
-        
+
         const token = jwt.sign(tokenPayload, JWT_SECRET, {
             expiresIn: '1h',
         });
@@ -130,7 +141,7 @@ export const verifyToken = async (req, res) => {
     try {
         // Extraer el token (formato "Bearer <token>")
         const token = authorization.split(' ')[1];
-        
+
         // Verificar el token
         const payload = jwt.verify(token, JWT_SECRET);
 
