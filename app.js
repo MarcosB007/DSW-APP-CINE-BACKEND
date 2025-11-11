@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import router from './routes/index.js';
 import routerAdmin from './routes/admin.js';
 import routerAuth from './routes/auth.routes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -25,14 +28,23 @@ const corsOptions = {
   optionsSuccessStatus: 240,
 };
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(express.static('public'));
 
 app.use('/', router);
-app.use('/admin', routerAdmin);
+app.use('/api', routerAdmin);
 app.use('/api', routerAuth);
+
+//const __filename = fileURLToPath(import.meta.url);
+//const __dirname = path.dirname(__filename);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = process.env.PORT;
 
