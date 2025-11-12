@@ -49,7 +49,21 @@ const getPeliculas = async (req, res) => {
     }
 };
 
+const getPeliculasPorCategoria = async (req, res) => {
+
+    try {
+        const { CATEGORIA_id } = req.query;
+        const [rows] = await pool.query('SELECT * FROM pelicula WHERE CATEGORIA_id = ?', [CATEGORIA_id]);
+        
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las películas' });
+    }
+}
+
 export {
     agregarPelicula,
-    getPeliculas
+    getPeliculas,
+    getPeliculasPorCategoria
 }

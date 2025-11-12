@@ -5,7 +5,7 @@ import { upload } from '../middleware/upload.js';
 // 2. Importa el middleware que revisa si es admin (¡importante!)
 import { authRequired, isAdmin } from '../middleware/validateToken.js';
 // 3. (Asumo que tienes un pool de MySQL)
-import { agregarPelicula, getPeliculas } from "../controllers/admin.controllers.js";
+import { agregarPelicula, getPeliculas, getPeliculasPorCategoria } from "../controllers/admin.controllers.js";
 
 const routerAdmin = Router();
 
@@ -16,6 +16,7 @@ const routerAdmin = Router();
 // console.log("agregarPelicula: ", typeof agregarPelicula);
 // console.log("----------------------------");
 routerAdmin.get('/peliculas', getPeliculas);
+routerAdmin.get('/peliculasPorCategoria', getPeliculasPorCategoria);
 routerAdmin.post('/agregarPelicula', authRequired, isAdmin, upload.single('imagen'), agregarPelicula);
 
 
