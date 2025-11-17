@@ -62,6 +62,19 @@ const getPeliculasPorCategoria = async (req, res) => {
     }
 }
 
+const getPeliculaPorId = async (req, res) => {
+    try {
+        const { id } = req.query;
+        console.log(id)
+        const [peli] = await pool.query('SELECT * FROM pelicula WHERE id = ?', [id]);
+        
+        res.json(peli)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener la película' });
+    }
+}
+
 const getCategorias = async (req, res) => {
     try {
         const [cat] = await pool.query('SELECT * FROM categoria');
@@ -92,6 +105,16 @@ const agregarFuncion = async (req, res) => {
     }
 }
 
+const getFunciones = async (req, res) => {
+    try {
+        const [funciones] = await pool.query('SELECT * FROM funcion');
+        res.json(funciones);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las funciones' });
+    }
+}
+
 const agregarSala = async (req, res) => {
     try {
         const { nombre, capacidad } = req.body;
@@ -104,15 +127,28 @@ const agregarSala = async (req, res) => {
         })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error en el servidor al crear la sala'});
+        res.status(500).json({ message: 'Error en el servidor al crear la sala' });
+    }
+}
+
+const getSalas = async (req, res) => {
+    try {
+        const [salas] = await pool.query('SELECT * FROM sala');
+        res.json(salas);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las salas' });
     }
 }
 
 export {
     agregarPelicula,
     getPeliculas,
+    getPeliculaPorId,
     getPeliculasPorCategoria,
     getCategorias,
     agregarFuncion,
-    agregarSala
+    agregarSala,
+    getFunciones,
+    getSalas
 }
