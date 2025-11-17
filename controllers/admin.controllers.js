@@ -72,9 +72,47 @@ const getCategorias = async (req, res) => {
     }
 }
 
+const agregarFuncion = async (req, res) => {
+    try {
+        const { fecha, hora, PELICULA_id, SALA_id } = req.body;
+        const [result] = await pool.query('INSERT INTO funcion (fecha, hora, PELICULA_id, SALA_id) VALUES (?, ?, ?, ?)',
+            [fecha, hora, PELICULA_id, SALA_id])
+
+        res.status(201).json({
+            id: result.insertId,
+            fecha,
+            hora,
+            PELICULA_id,
+            SALA_id,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error en el servidor al crear la funcion' });
+    }
+}
+
+const agregarSala = async (req, res) => {
+    try {
+        const { nombre, capacidad } = req.body;
+        const [result] = await pool.query('INSERT INTO sala (nombre, capacidad) VALUES (?, ?)', [nombre, capacidad]);
+
+        res.status(201).json({
+            id: result.insertId,
+            nombre,
+            capacidad,
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error en el servidor al crear la sala'});
+    }
+}
+
 export {
     agregarPelicula,
     getPeliculas,
     getPeliculasPorCategoria,
-    getCategorias
+    getCategorias,
+    agregarFuncion,
+    agregarSala
 }
