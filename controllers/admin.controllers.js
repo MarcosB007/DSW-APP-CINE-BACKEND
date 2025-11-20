@@ -67,7 +67,7 @@ const getPeliculaPorId = async (req, res) => {
         const { id } = req.query;
         console.log(id)
         const [peli] = await pool.query('SELECT * FROM pelicula WHERE id = ?', [id]);
-        
+
         res.json(peli)
     } catch (error) {
         console.error(error);
@@ -141,6 +141,73 @@ const getSalas = async (req, res) => {
     }
 }
 
+const agregarEntrada = async (req, res) => {
+    try {
+        const [FUNCION_id, precio] = req.body;
+        const [result] = await pool.query('INSERT INTO entrada (precio, FUNCION_id) values (?, ?)', [precio, FUNCION_id]);
+
+        res.status(201).json({
+            id: result.insertId,
+            precio,
+            FUNCION_id,
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Error al crear la entrada' });
+
+    }
+}
+
+// Endpoint: /crear-funcion-transaccion
+const crearFuncionyEntrada = async (req, res) => {
+    console.log("----> DATOS RECIBIDOS DEL FRONTEND:", req.body);
+    // Obtenemos una conexión del pool para poder iniciar la transacción
+    const connection = await pool.getConnection();
+
+    try {
+        const { PELICULA_id, SALA_id, fecha, hora, precio } = req.body;
+
+        // 1. INICIAR TRANSACCIÓN
+        // A partir de aquí, nada se guarda "de verdad" hasta que hagamos commit
+        await connection.beginTransaction();
+
+        // 2. INSERTAR LA FUNCIÓN
+        const [resultFuncion] = await connection.execute(
+            'INSERT INTO funcion (fecha, hora, PELICULA_id, SALA_id) VALUES (?, ?, ?, ?)',
+            [fecha, hora, PELICULA_id, SALA_id]
+        );
+
+        // Obtenemos el ID que se acaba de generar
+        const funcionIdGenerado = resultFuncion.insertId;
+
+        // 3. INSERTAR EL PRECIO (ENTRADA) USANDO ESE ID
+        await connection.execute(
+            'INSERT INTO entrada (precio, FUNCION_id) VALUES (?, ?)',
+            [precio, funcionIdGenerado]
+        );
+
+        // 4. CONFIRMAR CAMBIOS (COMMIT)
+        // Si llegamos aquí, todo salió bien. Guardamos permanentemente.
+        await connection.commit();
+
+        // 5. Responder al cliente
+        res.json({
+            message: 'Éxito total',
+            id: funcionIdGenerado
+        });
+
+    } catch (error) {
+        // 6. SI ALGO FALLA... REVERTIR TODO (ROLLBACK)
+        // Si falla el insert de entrada, se borra el insert de función automáticamente
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Error en la transacción', error: error.message });
+
+    } finally {
+        // Siempre liberar la conexión al final
+        connection.release();
+    }
+}
+
 export {
     agregarPelicula,
     getPeliculas,
@@ -150,5 +217,7 @@ export {
     agregarFuncion,
     agregarSala,
     getFunciones,
-    getSalas
+    getSalas,
+    agregarEntrada,
+    crearFuncionyEntrada
 }
