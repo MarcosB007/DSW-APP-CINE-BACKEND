@@ -115,6 +115,17 @@ const getFunciones = async (req, res) => {
     }
 }
 
+const getFuncionesForAdmin = async (req, res) => {
+    try {
+        const [funciones] = await pool.query('SELECT f.id, f.fecha, f.hora, p.nombre AS pelicula, s.nombre AS sala,e.precio                FROM funcion f INNER JOIN pelicula p ON f.PELICULA_id = p.id INNER JOIN sala s ON f.SALA_id = s.id LEFT JOIN entrada e ON e.FUNCION_id = f.id  ORDER BY f.fecha DESC');
+
+        res.json(funciones);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las funciones' });
+    }
+}
+
 const agregarSala = async (req, res) => {
     try {
         const { nombre, capacidad } = req.body;
@@ -219,5 +230,6 @@ export {
     getFunciones,
     getSalas,
     agregarEntrada,
-    crearFuncionyEntrada
+    crearFuncionyEntrada,
+    getFuncionesForAdmin
 }
