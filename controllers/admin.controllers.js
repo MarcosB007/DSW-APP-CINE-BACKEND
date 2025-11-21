@@ -111,7 +111,7 @@ const getFunciones = async (req, res) => {
 
 const getFuncionesForAdmin = async (req, res) => {
     try {
-        const [funciones] = await pool.query('SELECT f.id, f.fecha, f.hora, p.nombre AS pelicula, s.nombre AS sala,e.precio                FROM funcion f INNER JOIN pelicula p ON f.PELICULA_id = p.id INNER JOIN sala s ON f.SALA_id = s.id LEFT JOIN entrada e ON e.FUNCION_id = f.id  ORDER BY f.fecha DESC');
+        const [funciones] = await pool.query('SELECT f.id, f.fecha, f.hora, p.nombre AS pelicula, s.nombre AS sala,e.precio                FROM funcion f INNER JOIN pelicula p ON f.PELICULA_id = p.id INNER JOIN sala s ON f.SALA_id = s.id LEFT JOIN entrada e ON e.FUNCION_id = f.id WHERE estado = ? ORDER BY f.fecha DESC', [1]);
 
         res.json(funciones);
     } catch (error) {
@@ -207,7 +207,7 @@ const crearFuncionyEntrada = async (req, res) => {
 const deleteFuncion = async (req, res) => {
     try {
         const { id } = req.query;
-        console.log(id)
+        
         const result = await pool.query('update funcion set estado = ? where id = ?', [0, id]);
 
         res.status(200).json({
