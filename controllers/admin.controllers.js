@@ -174,8 +174,8 @@ const crearFuncionyEntrada = async (req, res) => {
         await connection.beginTransaction();
 
         const [resultFuncion] = await connection.execute(
-            'INSERT INTO funcion (fecha, hora, PELICULA_id, SALA_id) VALUES (?, ?, ?, ?)',
-            [fecha, hora, PELICULA_id, SALA_id]
+            'INSERT INTO funcion (fecha, hora, estado, PELICULA_id, SALA_id) VALUES (?, ?, ?, ?, ?)',
+            [fecha, hora, true, PELICULA_id, SALA_id]
         );
 
         // Obtenemos el ID que se acaba de generar
