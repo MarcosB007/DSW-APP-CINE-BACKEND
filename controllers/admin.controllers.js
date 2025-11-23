@@ -10,7 +10,7 @@ const agregarPelicula = async (req, res) => {
         }
 
         const imagenUrl = req.file.path;
-        
+
         const [result] = await pool.query(
             'INSERT INTO pelicula (nombre, duracion, lanzamiento, descripcion, imagen, estreno, CATEGORIA_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [nombre, duracion, lanzamiento, descripcion, imagenUrl, 0, CATEGORIA_id]
@@ -22,7 +22,7 @@ const agregarPelicula = async (req, res) => {
             duracion,
             lanzamiento,
             descripcion,
-            imagen: imagenUrl, 
+            imagen: imagenUrl,
             CATEGORIA_id,
         });
 
@@ -34,7 +34,7 @@ const agregarPelicula = async (req, res) => {
 
 const getPeliculas = async (req, res) => {
     try {
-        
+
         const [rows] = await pool.query('SELECT * FROM pelicula');
         res.json(rows);
     } catch (error) {
@@ -164,7 +164,7 @@ const agregarEntrada = async (req, res) => {
 
 
 const crearFuncionyEntrada = async (req, res) => {
-    
+
     const connection = await pool.getConnection();
 
     try {
@@ -207,7 +207,7 @@ const crearFuncionyEntrada = async (req, res) => {
 const deleteFuncion = async (req, res) => {
     try {
         const { id } = req.query;
-        
+
         const result = await pool.query('update funcion set estado = ? where id = ?', [0, id]);
 
         res.status(200).json({
@@ -216,6 +216,17 @@ const deleteFuncion = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: 'Error al eliminar la funcion' });
+    }
+}
+
+const getPeliculasPorEstreno = async (req, res) => {
+    try {    
+        const [rows] = await pool.query('SELECT * FROM pelicula WHERE estreno = ?', [1]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las películas' });
     }
 }
 
@@ -232,5 +243,6 @@ export {
     agregarEntrada,
     crearFuncionyEntrada,
     getFuncionesForAdmin,
-    deleteFuncion
+    deleteFuncion,
+    getPeliculasPorEstreno
 }
