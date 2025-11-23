@@ -12,8 +12,8 @@ const agregarPelicula = async (req, res) => {
         const imagenUrl = req.file.path;
         
         const [result] = await pool.query(
-            'INSERT INTO pelicula (nombre, duracion, lanzamiento, descripcion, imagen, CATEGORIA_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [nombre, duracion, lanzamiento, descripcion, imagenUrl, CATEGORIA_id]
+            'INSERT INTO pelicula (nombre, duracion, lanzamiento, descripcion, imagen, estreno, CATEGORIA_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [nombre, duracion, lanzamiento, descripcion, imagenUrl, 0, CATEGORIA_id]
         );
 
         res.status(201).json({
