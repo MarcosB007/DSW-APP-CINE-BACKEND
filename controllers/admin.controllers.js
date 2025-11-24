@@ -220,13 +220,46 @@ const deleteFuncion = async (req, res) => {
 }
 
 const getPeliculasPorEstreno = async (req, res) => {
-    try {    
+    try {
         const [rows] = await pool.query('SELECT * FROM pelicula WHERE estreno = ?', [1]);
 
         res.json(rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al obtener las películas' });
+    }
+}
+
+const getFuncionPorIdDePelicula = async (req, res) => {
+
+    try {
+        const { PELICULA_id } = req.query;
+        
+        if (!PELICULA_id) {
+            return res.status(400).json({ message: 'Falta el ID de la película' });
+        }
+
+        const sql = `
+            SELECT 
+                f.id, 
+                f.fecha, 
+                f.hora, 
+                s.nombre AS nombre_sala, 
+                s.capacidad,
+                e.precio
+            FROM funcion f
+            INNER JOIN sala s ON f.SALA_id = s.id
+            LEFT JOIN entrada e ON e.FUNCION_id = f.id
+            WHERE f.PELICULA_id = ? AND f.estado = 1
+            ORDER BY f.fecha ASC, f.hora ASC
+        `;
+
+        const [rows] = await pool.query(sql, [PELICULA_id]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener las funciones' });
     }
 }
 
@@ -244,5 +277,6 @@ export {
     crearFuncionyEntrada,
     getFuncionesForAdmin,
     deleteFuncion,
-    getPeliculasPorEstreno
+    getPeliculasPorEstreno,
+    getFuncionPorIdDePelicula
 }
