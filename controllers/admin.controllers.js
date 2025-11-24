@@ -79,7 +79,7 @@ const agregarPelicula = async (req, res) => {
 const getPeliculas = async (req, res) => {
     try {
 
-        const [rows] = await pool.query('SELECT * FROM pelicula');
+        const [rows] = await pool.query('SELECT * FROM pelicula WHERE activo=1');
         res.json(rows);
     } catch (error) {
         console.error(error);
@@ -91,7 +91,7 @@ const getPeliculasPorCategoria = async (req, res) => {
 
     try {
         const { CATEGORIA_id } = req.query;
-        const [rows] = await pool.query('SELECT * FROM pelicula WHERE CATEGORIA_id = ?', [CATEGORIA_id]);
+        const [rows] = await pool.query('SELECT * FROM pelicula WHERE CATEGORIA_id = ? AND activo = 1', [CATEGORIA_id]);
 
         res.json(rows);
     } catch (error) {
@@ -265,7 +265,7 @@ const deleteFuncion = async (req, res) => {
 
 const getPeliculasPorEstreno = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM pelicula WHERE estreno = ?', [1]);
+        const [rows] = await pool.query('SELECT * FROM pelicula WHERE estreno = ? AND activo = 1', [1]);
 
         res.json(rows);
     } catch (error) {
@@ -306,7 +306,26 @@ const getFuncionPorIdDePelicula = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener las funciones' });
     }
 }
+const deletePelicula = async (req, res) => {
+    try {
+        const { id } = req.query; // Recibimos el ID
 
+        // ACÁ ESTÁ LA BAJA LÓGICA:
+        // En lugar de DELETE, usamos UPDATE y ponemos un campo en 0 (falso).
+        // Si tu tabla no tiene columna 'estado', avísame.
+        const [result] = await pool.query('UPDATE pelicula SET activo = 0 WHERE id = ?', [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Película no encontrada' });
+        }
+
+        res.status(200).json({ message: 'Película dada de baja correctamente' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al eliminar la película' });
+    }
+};
 export {
     agregarPelicula,
     getPeliculas,
@@ -323,5 +342,6 @@ export {
     deleteFuncion,
     getPeliculasPorEstreno,
     getFuncionPorIdDePelicula,
-    createPreference
+    createPreference,
+    deletePelicula
 }
