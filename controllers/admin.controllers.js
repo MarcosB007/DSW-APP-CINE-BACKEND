@@ -1,4 +1,48 @@
 import { pool } from '../database/db.js';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
+
+// 1. CONFIGURACIÓN (Access Token del server.js que te pasaron)
+// Nota: Este token parece de producción o prueba, úsalo tal cual te lo pasaron.
+const client = new MercadoPagoConfig({
+    accessToken: "APP_USR-938408163245439-102716-40635c48fb3052a0e1ad82a4427cf7a0-2950889360"
+});
+
+const createPreference = async (req, res) => {
+    try {
+        // Recibimos los datos reales desde tu Frontend
+        const { titulo, cantidad, precio } = req.body;
+
+        const preference = new Preference(client);
+
+        const result = await preference.create({
+            body: {
+                items: [
+                    {
+                        title: titulo,
+                        quantity: Number(cantidad),
+                        unit_price: Number(precio),
+                        currency_id: 'ARS',
+                    },
+                ],
+                back_urls: {
+                    success: "https://danscodedev.github.io/cinedsi/git/success.html",
+                    failure: "https://danscodedev.github.io/cinedsi/git/failure.html",
+                    pending: "https://danscodedev.github.io/cinedsi/git/pending.html",
+                },
+                auto_return: "approved",
+            },
+        });
+        
+        res.json({
+            preferenceId: result.id,
+            init_point: result.init_point // <--- ESTE ES EL LINK MÁGICO
+        });
+
+    } catch (error) {
+        console.error("Error creando preference: ", error);
+        res.status(500).json({ error: "Error creando preference" });
+    }
+};
 
 const agregarPelicula = async (req, res) => {
 
@@ -234,7 +278,7 @@ const getFuncionPorIdDePelicula = async (req, res) => {
 
     try {
         const { PELICULA_id } = req.query;
-        
+
         if (!PELICULA_id) {
             return res.status(400).json({ message: 'Falta el ID de la película' });
         }
@@ -278,5 +322,6 @@ export {
     getFuncionesForAdmin,
     deleteFuncion,
     getPeliculasPorEstreno,
-    getFuncionPorIdDePelicula
+    getFuncionPorIdDePelicula,
+    createPreference
 }
