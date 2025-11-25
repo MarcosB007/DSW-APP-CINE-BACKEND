@@ -326,6 +326,38 @@ const deletePelicula = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar la película' });
     }
 };
+const editarPelicula = async (req, res) => {
+    try {
+        const { id } = req.query; // El ID viene en la URL (?id=5)
+        // Extraemos los datos del formulario
+        const { nombre, duracion, lanzamiento, descripcion, CATEGORIA_id, estreno } = req.body;
+        
+        let query = 'UPDATE pelicula SET nombre=?, duracion=?, lanzamiento=?, descripcion=?, CATEGORIA_id=?, estreno=?';
+        let params = [nombre, duracion, lanzamiento, descripcion, CATEGORIA_id, estreno];
+
+        // Si el usuario subió una NUEVA imagen, actualizamos también ese campo
+        if (req.file) {
+            query += ', imagen=?';
+            params.push(req.file.path);
+        }
+
+        // Cerramos la consulta agregando el WHERE
+        query += ' WHERE id = ?';
+        params.push(id);
+
+        const [result] = await pool.query(query, params);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Película no encontrada' });
+        }
+
+        res.json({ message: 'Película actualizada correctamente' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al actualizar la película' });
+    }
+};
 export {
     agregarPelicula,
     getPeliculas,
@@ -343,5 +375,6 @@ export {
     getPeliculasPorEstreno,
     getFuncionPorIdDePelicula,
     createPreference,
-    deletePelicula
+    deletePelicula,
+    editarPelicula
 }
