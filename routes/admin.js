@@ -5,7 +5,7 @@ import { upload } from '../middleware/upload.js';
 // 2. Importa el middleware que revisa si es admin (¡importante!)
 import { authRequired, isAdmin } from '../middleware/validateToken.js';
 // 3. (Asumo que tienes un pool de MySQL)
-import { agregarPelicula, getCategorias, getPeliculas, getPeliculasPorCategoria } from "../controllers/admin.controllers.js";
+import { agregarEntrada, agregarFuncion, agregarPelicula, agregarSala, crearFuncionyEntrada, createPreference, deleteFuncion, getCategorias, getFunciones, getFuncionesForAdmin, getFuncionPorIdDePelicula, getPeliculaPorId, getPeliculas, getPeliculasPorCategoria, getPeliculasPorEstreno, getSalas, deletePelicula, editarPelicula } from "../controllers/admin.controllers.js";
 
 const routerAdmin = Router();
 
@@ -17,9 +17,21 @@ const routerAdmin = Router();
 // console.log("----------------------------");
 routerAdmin.get('/peliculas', getPeliculas);
 routerAdmin.get('/peliculasPorCategoria', getPeliculasPorCategoria);
+routerAdmin.get('/getPeliculaPorId', getPeliculaPorId);
 routerAdmin.get('/categorias', getCategorias);
 routerAdmin.post('/agregarPelicula', authRequired, isAdmin, upload.single('imagen'), agregarPelicula);
-
-
+routerAdmin.post('/agregarFuncion', agregarFuncion);
+routerAdmin.post('/agregarSala', agregarSala);
+routerAdmin.get('/getFunciones', getFunciones);
+routerAdmin.get('/getSalas', getSalas);
+routerAdmin.post('/agregarEntrada', agregarEntrada);
+routerAdmin.post('/agregarFuncionEntrada', crearFuncionyEntrada);
+routerAdmin.get('/getFuncionesForAdmin', getFuncionesForAdmin);
+routerAdmin.put('/eliminarFuncion', deleteFuncion);
+routerAdmin.get('/getPeliculasPorEstreno', getPeliculasPorEstreno);
+routerAdmin.get('/getFuncionPorIdDePelicula', getFuncionPorIdDePelicula);
+routerAdmin.post('/createPreference', createPreference);
+routerAdmin.put('/eliminarPelicula', deletePelicula);
+routerAdmin.put('/editarPelicula', upload.single('imagen'), editarPelicula);
 
 export default routerAdmin;
