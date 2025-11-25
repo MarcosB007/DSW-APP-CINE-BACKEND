@@ -47,17 +47,17 @@ const createPreference = async (req, res) => {
 const agregarPelicula = async (req, res) => {
 
     try {
-        const { nombre, duracion, lanzamiento, descripcion, CATEGORIA_id } = req.body;
+        const { nombre, duracion, lanzamiento, descripcion, CATEGORIA_id, estreno } = req.body;
 
         if (!req.file) {
             return res.status(400).json({ message: 'No se subió ningún archivo de imagen' });
         }
 
         const imagenUrl = req.file.path;
-
+        const esEstreno = (estreno == '1' || estreno == 'true') ? 1 : 0;    
         const [result] = await pool.query(
-            'INSERT INTO pelicula (nombre, duracion, lanzamiento, descripcion, imagen, estreno, CATEGORIA_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [nombre, duracion, lanzamiento, descripcion, imagenUrl, 0, CATEGORIA_id]
+            'INSERT INTO pelicula (nombre, duracion, lanzamiento, descripcion, imagen, estreno, CATEGORIA_id, activo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+            [nombre, duracion, lanzamiento, descripcion, imagenUrl, esEstreno, CATEGORIA_id]
         );
 
         res.status(201).json({
@@ -67,7 +67,9 @@ const agregarPelicula = async (req, res) => {
             lanzamiento,
             descripcion,
             imagen: imagenUrl,
+            estreno: esEstreno,
             CATEGORIA_id,
+            activo: 1
         });
 
     } catch (error) {
